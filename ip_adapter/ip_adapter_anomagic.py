@@ -234,10 +234,11 @@ class Anomagic:
         mask_image_0 = torch.tensor(np.array(mask_image_0), dtype=torch.float32)
         mask_image_0 = (mask_image_0 > 0.5).float().to(self.device)
 
-        global_image_embeds = image_embeds.mean(dim=1)
+        image_embeds = self.attention_module(last_feature_layer_output[:, :256, :].float(),
+                                             mask_image_0.unsqueeze(0).unsqueeze(0))
 
-        image_prompt_embeds = self.image_proj_model(global_image_embeds.half())
-        uncond_image_prompt_embeds = self.image_proj_model(torch.zeros_like(global_image_embeds).half())
+        image_prompt_embeds = self.image_proj_model(image_embeds.half())
+        uncond_image_prompt_embeds = self.image_proj_model(torch.zeros_like(image_embeds).half())
 
         return image_prompt_embeds, uncond_image_prompt_embeds
 

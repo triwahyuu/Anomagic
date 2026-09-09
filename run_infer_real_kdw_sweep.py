@@ -14,7 +14,7 @@ from PIL import Image
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
-REAL_DATA = os.path.join(os.path.dirname(os.path.abspath(__file__)), "real_kdw_data")
+REAL_DATA = os.path.join(os.path.dirname(os.path.abspath(__file__)), "assets", "kdw")
 OUT_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "outputs", "real_kdw", "sweep")
 os.makedirs(OUT_DIR, exist_ok=True)
 

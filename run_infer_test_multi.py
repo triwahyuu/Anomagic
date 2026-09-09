@@ -5,7 +5,7 @@ Anomagic's actual headline claim (a reference anomaly from an *unrelated* catego
 transplanted onto the target), not yet exercised by the capsule-only run.
 
 Data: a handful of specific files downloaded from the Voxel51/mvtec-ad HF mirror (same source
-the AnomalyDiffusion session used), NOT the whole dataset -- see extra_mvtec_data/ (organized
+the AnomalyDiffusion session used), NOT the whole dataset -- see assets/mvtec/ (organized
 as <category>_<defect>/{normal,anomaly,anomaly_mask}.png).
 
 Cases:
@@ -34,7 +34,7 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from mask.creatMask import generate_adaptive_mask
 
 MVTEC_CAPSULE = "/workspaces/kdw-pipecrack/datasets/mvtec_ad/capsule"
-EXTRA = os.path.join(os.path.dirname(os.path.abspath(__file__)), "extra_mvtec_data")
+EXTRA = os.path.join(os.path.dirname(os.path.abspath(__file__)), "assets", "mvtec")
 OUT_DIR_ROOT = os.path.join(os.path.dirname(os.path.abspath(__file__)), "outputs", "multi")
 
 # 'crack' = new primitive only (this session's addition). 'original' = the shipped

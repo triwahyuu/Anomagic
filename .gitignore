@@ -9,3 +9,7 @@ ip_adapter_hf/
 vae_hf/
 base_hf/
 /outputs/
+
+# Local verification input data (real KDW photos, MVTec crops) -- not meant to live in git
+# history; re-fetch/re-generate per the scripts under run_infer_*.py.
+/assets/

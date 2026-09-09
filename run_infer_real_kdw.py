@@ -2,9 +2,9 @@
 Real Anomagic inference on real KDW pipe photos -- the first genuine end-to-end test with
 actual KDW data (not MVTec stand-ins). See playground/plan/20260909_02_real_kdw_data_crack_generation_plan.md.
 
-Reference: playground/video/crack/crack2.png, cropped to 512x512 (real_kdw_data/crack2_ref_512.png)
+Reference: playground/video/crack/crack2.png, cropped to 512x512 (assets/kdw/crack2_ref_512.png)
            mask hand-annotated by the user (crack2-annotated.png), extracted + verified by overlay
-           (real_kdw_data/crack2_ref_mask_512.png).
+           (assets/kdw/crack2_ref_mask_512.png).
 
 Targets:
   1. playground/video/sample/202605-no1-sample1.png (poor quality, hazy/blurry -- flagged)
@@ -22,7 +22,7 @@ from PIL import Image
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
-REAL_DATA = os.path.join(os.path.dirname(os.path.abspath(__file__)), "real_kdw_data")
+REAL_DATA = os.path.join(os.path.dirname(os.path.abspath(__file__)), "assets", "kdw")
 OUT_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "outputs", "real_kdw")
 os.makedirs(OUT_DIR, exist_ok=True)
 

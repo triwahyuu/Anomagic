@@ -1,0 +1,60 @@
+{
+	"name": "anomagic",
+	"build": {
+		"dockerfile": "Dockerfile",
+		"context": "..",
+		"args": {
+			"USER_UID": "1000",
+			"USER_GID": "1000"
+		}
+	},
+	"runArgs": [
+		"--gpus=all",
+		"--shm-size=16G",
+		"--ipc=host"
+	],
+	"remoteUser": "ubuntu",
+	"features": {
+		"ghcr.io/devcontainers/features/common-utils": {
+			"configureZshAsDefaultShell": true,
+			"installSsl": false,
+			"upgradePackages": false,
+			"username": "ubuntu"
+		}
+	},
+	"postCreateCommand": "bash .devcontainer/postCreateCommand.sh",
+	"mounts": [
+		"source=${localEnv:USER}-anomagic-bashhistory,target=/commandhistory,type=volume",
+		"source=${localEnv:USER}-anomagic-claude,target=/home/ubuntu/.claude,type=volume"
+	],
+	"containerEnv": {
+		"CLAUDE_CONFIG_DIR": "/home/ubuntu/.claude",
+		"NODE_OPTIONS": "--max-old-space-size=4096"
+	},
+	"customizations": {
+		"vscode": {
+			"extensions": [
+				"ms-azuretools.vscode-docker",
+				"ms-python.python",
+				"ms-python.black-formatter",
+				"ms-toolsai.jupyter",
+				"ms-python.vscode-pylance",
+				"anthropic.claude-code"
+			],
+			"settings": {
+				"dev.containers.copyGitConfig": true,
+				"python.defaultInterpreterPath": "/opt/venv/bin/python",
+				"terminal.integrated.defaultProfile.linux": "zsh",
+				"terminal.integrated.profiles.linux": {
+					"zsh": {
+						"path": "/usr/bin/zsh"
+					}
+				},
+				"terminal.integrated.gpuAcceleration": "off",
+				"terminal.integrated.fontLigatures": false,
+				"terminal.integrated.unicodeVersion": "11",
+				"python.analysis.extraPaths": []
+			}
+		}
+	}
+}

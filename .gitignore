@@ -1,0 +1,11 @@
+.venv/
+__pycache__/
+.huggingface/
+
+# Downloaded pretrained weights (~6.5GB total) -- see playground/handover doc for the exact
+# huggingface-cli commands to re-fetch these; not meant to live in git history.
+checkpoint/
+ip_adapter_hf/
+vae_hf/
+base_hf/
+/outputs/

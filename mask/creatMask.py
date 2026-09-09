@@ -8,7 +8,94 @@ import argparse
 from PIL import Image
 
 
-def generate_adaptive_mask(template, info, max_attempts=100):
+# --- Crack-shaped mask primitive ---------------------------------------------------------
+# NOT part of Anomagic's own released code. The shipped generate_adaptive_mask() below only
+# offers rectangle/ellipse/polygon/irregular-blob primitives (verified by reading this file
+# directly) -- none of them elongated/line-like. This is new code added to give the shape
+# primitive pool an actual crack-like option, wired in as one more entry in the existing
+# shape_type random.choice() pool (see generate_adaptive_mask()'s 'crack' branch below), not a
+# replacement for the existing shapes. Algorithm: a random-walk / midpoint-displacement main
+# path (the same technique used to generate mountain-range/coastline silhouettes), tapered in
+# width from base to tip, with a small number of shorter sub-branches forking off the main
+# path at random points along it.
+
+def _midpoint_displace(p1, p2, roughness, depth):
+    """Recursively displace the midpoint of segment p1-p2 perpendicular to itself, to turn a
+    straight line into a jagged crack-like path. Returns an ordered list of points p1..p2."""
+    if depth <= 0:
+        return [p1, p2]
+    dx, dy = p2[0] - p1[0], p2[1] - p1[1]
+    seg_len = math.hypot(dx, dy)
+    if seg_len < 1e-6:
+        return [p1, p2]
+    mx, my = (p1[0] + p2[0]) / 2, (p1[1] + p2[1]) / 2
+    nx, ny = -dy / seg_len, dx / seg_len
+    offset = random.uniform(-1, 1) * roughness * seg_len
+    mid = (mx + nx * offset, my + ny * offset)
+    left = _midpoint_displace(p1, mid, roughness * 0.65, depth - 1)
+    right = _midpoint_displace(mid, p2, roughness * 0.65, depth - 1)
+    return left[:-1] + right
+
+
+def _draw_tapered_polyline(canvas, path, max_width):
+    """Draws `path` as a sequence of line segments whose thickness tapers from max_width at
+    the start down to ~30% of max_width at the far end, giving the line a crack-like "thick
+    near the root, thin at the tip" profile."""
+    n = len(path)
+    if n < 2:
+        return
+    for i in range(n - 1):
+        t = i / max(1, n - 2)
+        w = max(1, int(round(max_width * (1 - 0.7 * t))))
+        p1 = (int(round(path[i][0])), int(round(path[i][1])))
+        p2 = (int(round(path[i + 1][0])), int(round(path[i + 1][1])))
+        cv2.line(canvas, p1, p2, 255, thickness=w, lineType=cv2.LINE_AA)
+
+
+def generate_crack_mask(size, x, y, width, height):
+    """Procedural elongated crack-shaped mask, drawn inside the same (x, y, width, height)
+    bounding box convention generate_adaptive_mask() already uses for its other shape
+    primitives -- so it plugs into the existing per-anomaly placement/overlap logic unchanged.
+    """
+    canvas = np.zeros(size, dtype=np.uint8)
+
+    angle = random.uniform(0, 2 * math.pi)
+    length = max(width, height) * random.uniform(0.9, 1.4)
+    cx, cy = x + width / 2, y + height / 2
+    p1 = (cx - math.cos(angle) * length / 2, cy - math.sin(angle) * length / 2)
+    p2 = (cx + math.cos(angle) * length / 2, cy + math.sin(angle) * length / 2)
+
+    depth = random.randint(4, 6)
+    path = _midpoint_displace(p1, p2, roughness=0.5, depth=depth)
+
+    max_line_width = max(2, int(min(width, height) * random.uniform(0.06, 0.16)))
+    _draw_tapered_polyline(canvas, path, max_width=max_line_width)
+
+    num_branches = random.randint(1, 3)
+    for _ in range(num_branches):
+        t = random.uniform(0.2, 0.8)
+        idx = int(t * (len(path) - 1))
+        origin = path[idx]
+        branch_angle = angle + random.choice([-1, 1]) * random.uniform(math.pi / 6, math.pi / 3)
+        branch_len = length * random.uniform(0.2, 0.45)
+        branch_end = (
+            origin[0] + math.cos(branch_angle) * branch_len,
+            origin[1] + math.sin(branch_angle) * branch_len,
+        )
+        branch_path = _midpoint_displace(origin, branch_end, roughness=0.5, depth=max(2, depth - 2))
+        _draw_tapered_polyline(canvas, branch_path, max_width=max(1, max_line_width // 2))
+
+    canvas = cv2.GaussianBlur(canvas, (3, 3), 0)
+    _, canvas = cv2.threshold(canvas, 50, 255, cv2.THRESH_BINARY)
+    return canvas
+
+
+def generate_adaptive_mask(template, info, max_attempts=100, shape_pool=None):
+    """shape_pool: optional override of the shape-type choices (default: the full
+    ['rectangle', 'ellipse', 'polygon', 'irregular', 'crack'] mix). Pass e.g. ['crack'] to
+    force every generated anomaly instance to use the crack primitive -- useful for a
+    single-defect-category use case (KDW's pipe cracks) or for testing, without disturbing
+    the default random mix any other caller relies on."""
 
     size = (256, 256)
     template_mask = (template == 255)
@@ -49,7 +136,7 @@ def generate_adaptive_mask(template, info, max_attempts=100):
             x = min(base_x + x_offset, size[0] - 10)
             y = min(base_y + y_offset, size[1] - 10)
 
-            shape_type = random.choice(['rectangle', 'ellipse', 'polygon', 'irregular'])
+            shape_type = random.choice(shape_pool or ['rectangle', 'ellipse', 'polygon', 'irregular', 'crack'])
 
             width = random.randint(int(width_range[0] * 256), int(width_range[1] * 256))
             height = random.randint(int(height_range[0] * 256), int(height_range[1] * 256))
@@ -92,6 +179,9 @@ def generate_adaptive_mask(template, info, max_attempts=100):
                 cv2.drawContours(temp_mask, contours, -1, 255, -1)
                 temp_mask = cv2.GaussianBlur(temp_mask, (9, 9), 0)
                 _, temp_mask = cv2.threshold(temp_mask, 50, 255, cv2.THRESH_BINARY)
+                mask = cv2.bitwise_or(mask, temp_mask)
+            elif shape_type == 'crack':
+                temp_mask = generate_crack_mask(size, x, y, width, height)
                 mask = cv2.bitwise_or(mask, temp_mask)
 
             if need_rotation and random.random() > 0.5:

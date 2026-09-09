@@ -323,7 +323,8 @@ def encode_long_text(input_ids, tokenizer, text_encoder, max_length=77, device="
         input_ids = input_ids.unsqueeze(0)
     batch_size = input_ids.size(0)
     hidden_dim = text_encoder.config.hidden_size
-    combined_embeddings = torch.zeros(batch_size, hidden_dim, device=device)
+    weight_dtype = next(text_encoder.parameters()).dtype
+    combined_embeddings = torch.zeros(batch_size, hidden_dim, device=device, dtype=weight_dtype)
     for batch_idx in range(batch_size):
         current_input_ids = input_ids[batch_idx]
         chunks = [
@@ -350,7 +351,7 @@ def encode_long_text(input_ids, tokenizer, text_encoder, max_length=77, device="
         if embeddings:
             combined_embeddings[batch_idx] = torch.mean(torch.cat(embeddings, dim=0), dim=0)
         else:
-            combined_embeddings[batch_idx] = torch.zeros(hidden_dim, device=device)
+            combined_embeddings[batch_idx] = torch.zeros(hidden_dim, device=device, dtype=weight_dtype)
     return combined_embeddings.unsqueeze(1)
 
 

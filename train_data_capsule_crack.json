@@ -1,0 +1,57 @@
+{
+  "datasets": [
+    {
+      "name": "capsule_crack_standin",
+      "images": [
+        {
+          "image_path": "test/crack/000.png",
+          "mask_path": "ground_truth/crack/000_mask.png",
+          "category": "capsule",
+          "defect_name": "crack"
+        },
+        {
+          "image_path": "test/crack/001.png",
+          "mask_path": "ground_truth/crack/001_mask.png",
+          "category": "capsule",
+          "defect_name": "crack"
+        },
+        {
+          "image_path": "test/crack/002.png",
+          "mask_path": "ground_truth/crack/002_mask.png",
+          "category": "capsule",
+          "defect_name": "crack"
+        },
+        {
+          "image_path": "test/crack/003.png",
+          "mask_path": "ground_truth/crack/003_mask.png",
+          "category": "capsule",
+          "defect_name": "crack"
+        },
+        {
+          "image_path": "test/crack/004.png",
+          "mask_path": "ground_truth/crack/004_mask.png",
+          "category": "capsule",
+          "defect_name": "crack"
+        },
+        {
+          "image_path": "test/crack/005.png",
+          "mask_path": "ground_truth/crack/005_mask.png",
+          "category": "capsule",
+          "defect_name": "crack"
+        },
+        {
+          "image_path": "test/crack/006.png",
+          "mask_path": "ground_truth/crack/006_mask.png",
+          "category": "capsule",
+          "defect_name": "crack"
+        },
+        {
+          "image_path": "test/crack/007.png",
+          "mask_path": "ground_truth/crack/007_mask.png",
+          "category": "capsule",
+          "defect_name": "crack"
+        }
+      ]
+    }
+  ]
+}
